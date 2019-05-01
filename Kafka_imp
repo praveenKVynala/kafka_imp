@@ -140,6 +140,16 @@ Start a Console Consumer
 kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic mysqlsource-jdbc-test-employees --from-beginning
 
 
+mysql_sink_connector:
+
+name=mysql-sink-jdbc-test
+connector.class=io.confluent.connect.jdbc.JdbcSinkConnector
+tasks.max=3
+connection.url=jdbc:mysql://127.0.0.1:3306/hadoop
+connection.user=root
+connection.password=root
+auto.create=true
+topics.regex=^mysqlsource.*
 
 
 
