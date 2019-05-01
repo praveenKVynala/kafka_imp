@@ -1,0 +1,148 @@
+pyspark --jars /home/hduser/Downloads/jar_files/spark-streaming-kafka-0-10_2.10-2.2.3.jar  --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.3.2
+
+
+zookeeper-server-start /usr/local/confluent-5.1.2/etc/kafka/zookeeper.properties
+kafka-server-start /usr/local/confluent-5.1.2/etc/kafka/server.properties 
+
+
+schema-registry-start /usr/local/confluent-5.1.2/etc/schema-registry/schema-registry.properties
+
+
+
+kafka-topics --zookeeper localhost:2181 --create --topic kafkatest --partitions 1 --replication-factor  1
+
+
+kafka-console-producer --broker-list localhost:9092 --topic test
+
+
+
+
+https://mtpatter.github.io/bilao/notebooks/html/01-spark-struct-stream-kafka.html
+https://www.confluent.io/blog/introduction-to-apache-kafka-for-python-programmers/
+
+https://community.hortonworks.com/articles/91379/spark-structured-streaming-with-nifi-and-kafka-usi.html
+
+https://www.slideshare.net/databricks/writing-continuous-applications-with-structured-streaming-python-apis-in-apache-spark
+https://medium.com/knoldus/basic-example-for-spark-structured-streaming-kafka-integration-a6d0b3ffc3bd
+
+https://github.com/DTAIEB/Thoughtful-Data-Science/blob/master/chapter%207/Twitter%20Sentiment%20Analysis%20-%20Part%202.ipynb
+
+
+KAFKA CONNECT:
+
+https://www.tutorialkart.com/apache-kafka/kafka-connector-mysql-jdbc/
+
+https://www.youtube.com/watch?v=Ur5XU6TtSa0
+https://www.youtube.com/watch?v=3IH_C36uBio
+https://www.confluent.io/blog/kafka-connect-deep-dive-jdbc-source-connector
+https://mapr.com/docs/52/Kafka/Connect-jdbc-parameters.html
+
+https://docs.confluent.io/current/connect/kafka-connect-jdbc/sink-connector/sink_config_options.html
+https://docs.confluent.io/current/connect/kafka-connect-jdbc/sink-connector/index.html
+
+https://docs.confluent.io/current/connect/kafka-connect-jdbc/source-connector/index.html
+https://docs.confluent.io/current/connect/kafka-connect-jdbc/source-connector/source_config_options.html
+
+https://www.baeldung.com/kafka-connectors-guide
+
+
+
+
+mysql:
+
+CREATE TABLE employee(
+emp_id INT,
+emp_name VARCHAR(50),
+emp_sal FLOAT(8,2),
+PRIMARY KEY(emp_id)
+);
+
+INSERT INTO employee values (100,'Praveen',560000.00);
+INSERT INTO employee values (101,'Praveen1',577000.00);
+INSERT INTO employee values (102,'Praveen2',568000.00);
+INSERT INTO employee values (103,'Praveen3',680000.00);
+INSERT INTO employee values (104,'Praveen4',50000.09);
+INSERT INTO employee values (105,'Praveen5',567600.90);
+INSERT INTO employee values (106,'Praveen6',567434.00);
+INSERT INTO employee values (107,'Praveen7',345672.00);
+INSERT INTO employee values (108,'Praveen8',675442.00);
+INSERT INTO employee values (109,'Praveen9',560000.00);
+INSERT INTO employee values (110,'Praveen10',560000.00);
+INSERT INTO employee values (111,'Praveen11',560000.00);
+INSERT INTO employee values (112,'Praveen12',500000.00);
+INSERT INTO employee values (113,'Praveen13',50000.00);
+INSERT INTO employee values (114,'Praveen14',560000.00);
+INSERT INTO employee values (115,'Praveen15',60000.00);
+INSERT INTO employee values (116,'Praveen16',560000.00);
+INSERT INTO employee values (117,'Praveen17',60000.00);
+INSERT INTO employee values (118,'Praveen18',560000.00);
+INSERT INTO employee values (119,'Praveen19',60000.00);
+INSERT INTO employee values (120,'Praveen20',560000.00);
+
+
+
+
+CREATE TABLE emp_issues(
+ emp_id INT,
+ issue_title VARCHAR(100) NOT NULL,
+ sub_date TIMESTAMP NOT NULL,
+ PRIMARY KEY ( emp_id )
+);
+
+INSERT INTO emp_issues values (100,'Login',CURRENT_TIMESTAMP());
+INSERT INTO emp_issues values (101,'Logout',CURRENT_TIMESTAMP());
+INSERT INTO emp_issues values (102,'Loan',CURRENT_TIMESTAMP());
+INSERT INTO emp_issues values (103,'404 Error',CURRENT_TIMESTAMP());
+INSERT INTO emp_issues values (104,'500 Error',CURRENT_TIMESTAMP());
+
+
+
+mysql_source_connector:
+
+name=mysql-source-jdbc-test
+connector.class=io.confluent.connect.jdbc.JdbcSourceConnector
+tasks.max=1
+connection.url=jdbc:mysql://127.0.0.1:3306/kafka_citi
+connection.user=root
+connection.password=root
+table.blacklist=emp_issues
+mode=incrementing
+incrementing.column.name=emp_id
+topic.prefix=mysqlsource-jdbc-test-
+
+
+step1:
+Start Zookeeper, Kafka and Schema Registry
+confluent start schema-registry
+
+To Start Confluent:
+confluent start
+
+To stop Confluent:
+confluent stop
+
+Confluent status:
+confluent status
+
+step2:
+Start standalone connector
+connect-standalone /usr/local/confluent-5.1.2/etc/schema-registry/connect-avro-standalone.properties /usr/local/confluent-5.1.2/etc/kafka-connect-jdbc/source_mysql_connect.properties
+
+Default Way:
+confluent load mysql-source-jdbc-test -d /usr/local/confluent-5.1.2/etc/kafka-connect-jdbc/source_mysql_connect.properties
+
+
+step3:
+To See Topic names:
+kafka-topics --list --zookeeper localhost:2181
+
+Start a Console Consumer
+kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic mysqlsource-jdbc-test-employees --from-beginning
+
+
+
+
+
+
+
+
