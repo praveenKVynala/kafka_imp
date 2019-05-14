@@ -140,6 +140,9 @@ Start a Console Consumer
 kafka-avro-console-consumer --bootstrap-server localhost:9092 --topic mysqlsource-jdbc-test-employees --from-beginning
 
 
+
+
+
 mysql_sink_connector:
 
 name=mysql-sink-jdbc-test
@@ -149,10 +152,133 @@ connection.url=jdbc:mysql://127.0.0.1:3306/hadoop
 connection.user=root
 connection.password=root
 auto.create=true
-topics.regex=^mysqlsource.*
+topics.regex=^mysqlsource-jdbc-test-.*
+
+
+curl -X POST -H "Content-Type: application/json" --data '{"name": "Sink_MYSQL_JSON",
+ "config": 
+{
+"connector.class":"io.confluent.connect.jdbc.JdbcSinkConnector",
+"tasks.max":"1",
+"key.converter":"org.apache.kafka.connect.json.JsonConverter",
+"value.converter":"org.apache.kafka.connect.json.JsonConverter",
+"connection.url":"jdbc:mysql://127.0.0.1:3306/kafka_citi",
+"connection.user":"root",
+"connection.password":"root",
+"auto.create":"true",
+"insert.mode":"upsert",
+"table.name.format":"emp_issues_JSON",
+"topics":"Source_JSON_emp_issues"
+ }}' http://localhost:8083/connectors
+
+
+curl -X POST -H "Content-Type: application/json" --data '{"name": "Source_MYSQL_JSON",
+ "config": 
+{
+"connector.class":"io.confluent.connect.jdbc.JdbcSourceConnector",
+"tasks.max":"1",
+"key.converter":"org.apache.kafka.connect.json.JsonConverter",
+"value.converter":"org.apache.kafka.connect.json.JsonConverter",
+"connection.url":"jdbc:mysql://127.0.0.1:3306/kafka_citi",
+"connection.user":"root",
+"connection.password":"root",
+"table.whitelist":"emp_issues",
+"mode":"bulk",
+"poll.interval.ms":"6000000",
+"table.poll.interval.ms":"1000",
+"topic.prefix":"Source_JSON_"
+ }}' http://localhost:8083/connectors
 
 
 
+
+
+
+
+curl -X POST -H "Content-Type: application/json" --data '{"name": "Sink_MYSQL_AVRO",
+ "config": 
+{
+"connector.class":"io.confluent.connect.jdbc.JdbcSinkConnector",
+"tasks.max":"1",
+"connection.url":"jdbc:mysql://127.0.0.1:3306/kafka_citi",
+"connection.user":"root",
+"connection.password":"root",
+"auto.create":"true",
+"insert.mode":"insert",
+"table.name.format":"emp_issues_AVRO",
+"topics":"Source_AVRO_emp_issues"
+ }}' http://localhost:8083/connectors
+
+
+
+curl -X POST -H "Content-Type: application/json" --data '{"name": "Source_MYSQL_AVRO",
+ "config": 
+{
+"connector.class":"io.confluent.connect.jdbc.JdbcSourceConnector",
+"tasks.max":"1",
+"connection.url":"jdbc:mysql://127.0.0.1:3306/kafka_citi",
+"connection.user":"root",
+"connection.password":"root",
+"table.whitelist":"emp_issues",
+"mode":"bulk",
+"poll.interval.ms":"6000000",
+"table.poll.interval.ms":"1000",
+"topic.prefix":"Source_AVRO_"
+ }}' http://localhost:8083/connectors
+
+
+
+
+
+"hive.integration":"true",
+ "hive.conf.dir":"/home/hduser/ecosystem/apache-hive-2.3.4-bin/conf",
+"hive.metastore.uris":"thrift://localhost:9083",
+"schema.compatibility":"BACKWARD",
+"connector.class":"io.confluent.connect.hdfs.HdfsSinkConnector",
+"tasks.max":"1",
+"topics":"Source_JSON_emp_issues",
+"hdfs.url":"hdfs://localhost:9000/",
+"flush.size":"1"
+
+
+
+
+
+curl -X POST -H "Content-Type: application/json" --data '{"name": "Sink_HDFS_JSON4",
+ "config": 
+{
+"connector.class":"io.confluent.connect.hdfs.HdfsSinkConnector",
+"key.converter":"org.apache.kafka.connect.json.JsonConverter",
+"value.converter":"org.apache.kafka.connect.json.JsonConverter",
+"hive.integration":"true",
+ "hive.conf.dir":"/home/hduser/ecosystem/apache-hive-2.3.4-bin/conf",
+"hive.metastore.uris":"thrift://localhost:9083",
+"schema.compatibility":"BACKWARD",
+"tasks.max":"1",
+"topics":"Source_JSON_emp_issues",
+"hdfs.url":"hdfs://localhost:9000/",
+"topics.dir":"hdfs://localhost:9000/",
+"flush.size":"1"
+ }}' http://localhost:8083/connectors
+
+
+
+
+curl -X POST -H "Content-Type: application/json" --data '{"name": "Sink_HDFS_AVRO",
+ "config": 
+{
+"connector.class":"io.confluent.connect.hdfs.HdfsSinkConnector",
+"hive.integration":"true",
+ "hive.conf.dir":"/home/hduser/ecosystem/apache-hive-2.3.4-bin/conf",
+"hive.metastore.uris":"thrift://localhost:9083",
+"schema.compatibility":"BACKWARD",
+"tasks.max":"1",
+"auto.create":"true",
+"insert.mode":"insert",
+"topics":"Source_AVRO_emp_issues",
+"hdfs.url":"hdfs://localhost:9000/",
+"flush.size":"1"
+ }}' http://localhost:8083/connectors
 
 
 
